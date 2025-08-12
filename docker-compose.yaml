@@ -1,0 +1,74 @@
+version: '3.3'
+services:
+  qwen2.5:
+    image: flask-api
+    build:
+      context: .
+      dockerfile: Dockerfile.qwen2.5
+    expose:
+      - "8299"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8299/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - model_network
+
+  qwen3.0:
+    image: flask-api
+    build:
+      context: .
+      dockerfile: Dockerfile.qwen2.5
+    expose:
+      - "8299"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8299/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - model_network
+
+  envoy:
+    image: envoy-custom
+    build:
+      context: .
+      dockerfile: Dockerfile.envoy
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+    entrypoint: ["/docker-entrypoint.sh", "envoy", "-c", "/etc/envoy/envoy.yaml"]
+    ports:
+      - "8299:8299"
+      - "9901:9901" #管理接口
+    depends_on:
+      - qwen2.5
+      - qwen3.0
+    networks:
+      - model_network
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    networks:
+      - model_network
+    depends_on:
+      - envoy
+  
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports: 
+      - "3000:3000"
+    networks:
+      - model_network
+    depends_on:
+      - prometheus
+
+networks:
+  model_network:
+    driver: bridge
