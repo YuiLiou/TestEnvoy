@@ -1,4 +1,9 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
 scrape_configs:
+  # envoy proxy
   - job_name: 'envoy-proxy'
     scrape_interval: 5s
     static_configs:
@@ -9,3 +14,21 @@ scrape_configs:
         regex: "cluster\\.((.+?)_cluster)"
         target_label: "upstream_address"
         replacement: "$1:8299"      
+  
+  # qwen2.5
+  - job_name: 'qwen_2.5'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets:
+          - 'qwen2.5_1:8299' 
+          - 'qwen2.5_2:8299' 
+          - 'qwen2.5_3:8299' 
+  
+  # qwen3.0
+  - job_name: 'qwen_3.0'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets:
+          - 'qwen3.0_1:8299' 
+          - 'qwen3.0_2:8299' 
+          - 'qwen3.0_3:8299' 

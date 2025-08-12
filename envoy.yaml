@@ -40,7 +40,6 @@ static_resources:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   
   clusters:
-
   # qwen2.5
   - name: qwen2.5_cluster
     connect_timeout: 5s
@@ -60,7 +59,17 @@ static_resources:
         - endpoint:
             address:
               socket_address:
-                address: qwen2.5
+                address: qwen2.5_1
+                port_value: 8299
+        - endpoint:
+            address:
+              socket_address:
+                address: qwen2.5_2
+                port_value: 8299
+        - endpoint:
+            address:
+              socket_address:
+                address: qwen2.5_3
                 port_value: 8299
     
     health_checks:
@@ -90,7 +99,17 @@ static_resources:
         - endpoint:
             address:
               socket_address:
-                address: qwen3.0
+                address: qwen3.0_1
+                port_value: 8299
+        - endpoint:
+            address:
+              socket_address:
+                address: qwen3.0_2
+                port_value: 8299
+        - endpoint:
+            address:
+              socket_address:
+                address: qwen3.0_3
                 port_value: 8299
     
     health_checks:
@@ -104,10 +123,12 @@ static_resources:
 stats_config:
   use_all_default_tags: true
   stats_tags:
-    - tag_name: cluster_name
-      regex: "^cluster\\.((.+?)\\.)"
-    - tag_name: upstream_address
-      regex: "((?:[0-9]{1,3}\\.){3}[0-9]{1,3}:[0-9]+)$"
+    - tag_name: "servcie_name"
+      regex: "^cluster\\.([^_]+)_cluster.*"
+    - tag_name: "container_instance"
+      regex: "^cluster\\.[^_]+_cluster(_[0-9]+_[0-9]+_[0-9]+_[0-9]+_[0-9]+)?\\."
+    - tag_name: "cluster_name"
+      regex: "^cluster\\.([^\\.]+)\\."
 
 layered_runtime:
   layers:

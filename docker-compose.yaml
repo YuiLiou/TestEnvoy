@@ -1,6 +1,35 @@
 version: '3.3'
 services:
-  qwen2.5:
+  # qwen2.5
+  qwen2.5_1:
+    image: flask-api
+    build:
+      context: .
+      dockerfile: Dockerfile.qwen2.5
+    expose:
+      - "8299"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8299/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - model_network  
+  qwen2.5_2:
+    image: flask-api
+    build:
+      context: .
+      dockerfile: Dockerfile.qwen2.5
+    expose:
+      - "8299"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8299/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - model_network
+  qwen2.5_3:
     image: flask-api
     build:
       context: .
@@ -15,7 +44,36 @@ services:
     networks:
       - model_network
 
-  qwen3.0:
+  # qwen3.0
+  qwen3.0_1:
+    image: flask-api
+    build:
+      context: .
+      dockerfile: Dockerfile.qwen2.5
+    expose:
+      - "8299"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8299/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - model_network
+  qwen3.0_2:
+    image: flask-api
+    build:
+      context: .
+      dockerfile: Dockerfile.qwen2.5
+    expose:
+      - "8299"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8299/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - model_network
+  qwen3.0_3:
     image: flask-api
     build:
       context: .
@@ -30,6 +88,7 @@ services:
     networks:
       - model_network
 
+  # envoy
   envoy:
     image: envoy-custom
     build:
@@ -42,11 +101,16 @@ services:
       - "8299:8299"
       - "9901:9901" #管理接口
     depends_on:
-      - qwen2.5
-      - qwen3.0
+      - qwen2.5_1
+      - qwen2.5_2
+      - qwen2.5_3
+      - qwen3.0_1
+      - qwen3.0_2
+      - qwen3.0_3
     networks:
       - model_network
 
+  # prometheus
   prometheus:
     image: prom/prometheus
     container_name: prometheus
@@ -59,6 +123,7 @@ services:
     depends_on:
       - envoy
   
+  # grafana
   grafana:
     image: grafana/grafana
     container_name: grafana
