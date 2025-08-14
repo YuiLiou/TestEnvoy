@@ -1,3 +1,7 @@
+node:
+  id: envoy-node-1
+  cluster: envoy-cluster-1
+
 admin:
   access_log_path: /tmp/admin_access.log
   address:
@@ -61,16 +65,28 @@ static_resources:
               socket_address:
                 address: qwen2.5_1
                 port_value: 8299
+          metadata:
+            filter_metadata:
+              envoy.lb:
+                alt_stat_name: "qwen2.5_1_stats"
         - endpoint:
             address:
               socket_address:
                 address: qwen2.5_2
                 port_value: 8299
+          metadata:
+            filter_metadata:
+              envoy.lb:
+                alt_stat_name: "qwen2.5_2_stats"
         - endpoint:
             address:
               socket_address:
                 address: qwen2.5_3
                 port_value: 8299
+          metadata:
+            filter_metadata:
+              envoy.lb:
+                alt_stat_name: "qwen2.5_3_stats"
     
     health_checks:
     - timeout: 5s
@@ -101,16 +117,28 @@ static_resources:
               socket_address:
                 address: qwen3.0_1
                 port_value: 8299
+          metadata:
+            filter_metadata:
+              envoy.lb:
+                alt_stat_name: "qwen3.0_1_stats"
         - endpoint:
             address:
               socket_address:
                 address: qwen3.0_2
                 port_value: 8299
+          metadata:
+            filter_metadata:
+              envoy.lb:
+                alt_stat_name: "qwen3.0_2_stats"
         - endpoint:
             address:
               socket_address:
                 address: qwen3.0_3
                 port_value: 8299
+          metadata:
+            filter_metadata:
+              envoy.lb:
+                alt_stat_name: "qwen3.0_3_stats"
     
     health_checks:
     - timeout: 5s
@@ -119,20 +147,38 @@ static_resources:
       healthy_threshold: 2
       http_health_check:
         path: "/health"
+  
+  - name: statsd_cluster
+    type: STRICT_DNS
+    connect_timeout: 0.25s
+    lb_policy: ROUND_ROBIN
+    load_assignment:
+      cluster_name: statsd_cluster
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: statsd-exporter
+                port_value: 9125
 
-stats_config:
-  use_all_default_tags: true
-  stats_tags:
-    - tag_name: "servcie_name"
-      regex: "^cluster\\.([^_]+)_cluster.*"
-    - tag_name: "container_instance"
-      regex: "^cluster\\.[^_]+_cluster(_[0-9]+_[0-9]+_[0-9]+_[0-9]+_[0-9]+)?\\."
-    - tag_name: "cluster_name"
-      regex: "^cluster\\.([^\\.]+)\\."
+stats_sinks:
+  - name: envoy.stat_sinks.statsd
+    typed_config:
+      "@type": type.googleapis.com/envoy.config.metrics.v3.StatsdSink
+      tcp_cluster_name: statsd_cluster
+  # - name: envoy.stat_sinks.prometheus
+  #   typed_config:
+  #     "@type": type.googleapis.com/envoy.extensions.metrics_sinks.prometheus.v3.PrometheusSink
+  #     emit_tags_as_labels: true
 
 layered_runtime:
   layers:
     - name: static_layer
       static_layer:
+        upstream:
+          cluster:
+            metrics:
+              per_endpoint_stats_enabled: true
         overload:
           global_downstream_max_connections: 1000

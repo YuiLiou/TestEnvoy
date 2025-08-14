@@ -6,14 +6,18 @@ scrape_configs:
   # envoy proxy
   - job_name: 'envoy-proxy'
     scrape_interval: 5s
+    metrics_path: '/stats/prometheus'
     static_configs:
       - targets: ['envoy:9901']
-    metrics_path: '/stats/prometheus'
-    relabel_configs:
-      - source_labels: [__name__]
-        regex: "cluster\\.((.+?)_cluster)"
-        target_label: "upstream_address"
-        replacement: "$1:8299"      
+    # relabel_configs:
+    #   - source_labels: [envoy_cluster_name]
+    #     regex: 'qwen3.0_cluster'
+    #     target_label: upstream_address
+    #     replacement: '$1:$2'
+    #   - source_labels: [__name__]
+    #     regex: 'envoy_cluster_(.+)_upstream_rq_total'
+    #     target_label: "instance"
+    #     replacement: "$1"
   
   # qwen2.5
   - job_name: 'qwen_2.5'
@@ -22,7 +26,12 @@ scrape_configs:
       - targets:
           - 'qwen2.5_1:8299' 
           - 'qwen2.5_2:8299' 
-          - 'qwen2.5_3:8299' 
+          - 'qwen2.5_3:8299'
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '(.+):\\d+'
+        target_label: 'service_name'
+        replacement: '$1'
   
   # qwen3.0
   - job_name: 'qwen_3.0'
@@ -31,4 +40,9 @@ scrape_configs:
       - targets:
           - 'qwen3.0_1:8299' 
           - 'qwen3.0_2:8299' 
-          - 'qwen3.0_3:8299' 
+          - 'qwen3.0_3:8299'
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '(.+):\\d+'
+        target_label: 'service_name'
+        replacement: '$1' 

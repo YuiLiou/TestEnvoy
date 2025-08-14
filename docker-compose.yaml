@@ -88,6 +88,15 @@ services:
     networks:
       - model_network
 
+  # statsd-exporter
+  statsd-exporter:
+    image: prom/statsd-exporter
+    ports:
+      - "9125:9125/udp"
+      - "9102:9102"
+    networks:
+      - model_network
+
   # envoy
   envoy:
     image: envoy-custom
@@ -107,6 +116,7 @@ services:
       - qwen3.0_1
       - qwen3.0_2
       - qwen3.0_3
+      - statsd-exporter
     networks:
       - model_network
 

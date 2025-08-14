@@ -1,0 +1,65 @@
+version: '3.3'
+services:
+  qwen2.5:
+    image: flask-api
+    build:
+      context: .
+      dockerfile: Dockerfile.qwen2.5
+    expose:
+      - "8299"
+    labels:
+      - "SERVICE_NAME=qwen2.5"
+      - "SERVICE_8299_NAME=qwen2.5"
+      - "SERVICE_8299_CHECK_HTTP=/health"
+      - "SERVICE_8299_CHECK_INTERVAL=30s"
+      - "SERVICE_8299_CHECK_TIMEOUT=5s"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8299/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - model_network
+  
+  consul:
+    image: hashicorp/consul:latest
+    command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0 -bind=0.0.0.0
+    ports:
+      - "8500:8500"     # HTTP API/UI
+      - "8600:8600"     # DNS
+      - "8600:8600/udp" # DNS/udp
+    networks:
+      - model_network
+
+  registrator:
+    image: gliderlabs/registrator:latest
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+    command: -internal consul://consul:8500
+    depends_on:
+      - consul
+    networks:
+      - model_network
+
+  envoy:
+    image: envoy-custom
+    build:
+      context: .
+      dockerfile: Dockerfile.envoy
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+      - ./wait-for.sh:/wait-for.sh
+    entrypoint: ["bin/sh", "/wait-for.sh", "consul:8500", "/docker-entrypoint.sh", "envoy", "-c", "/etc/envoy/envoy.yaml"]
+    ports:
+      - "8299:8299"
+      - "9901:9901" #管理接口
+    depends_on:
+      - qwen2.5
+      - consul
+      - registrator
+    networks:
+      - model_network
+
+networks:
+  model_network:
+    driver: bridge
