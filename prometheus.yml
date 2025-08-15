@@ -20,15 +20,15 @@ scrape_configs:
     metrics_path: '/metrics'
     static_configs:
       - targets:
-          - 'qwen2.5_1:8299' 
-          - 'qwen2.5_2:8299' 
-          - 'qwen2.5_3:8299' 
+          - 'qwen2.5-1:8299' 
+          - 'qwen2.5-2:8299' 
+          - 'qwen2.5-3:8299' 
   
   # qwen3.0
   - job_name: 'qwen_3.0'
     metrics_path: '/metrics'
     static_configs:
       - targets:
-          - 'qwen3.0_1:8299' 
-          - 'qwen3.0_2:8299' 
-          - 'qwen3.0_3:8299' 
+          - 'qwen3.0-1:8299' 
+          - 'qwen3.0-2:8299' 
+          - 'qwen3.0-3:8299' 

@@ -59,18 +59,18 @@ static_resources:
         - endpoint:
             address:
               socket_address:
-                address: qwen2.5_1
+                address: qwen2.5-1
                 port_value: 8299
         - endpoint:
             address:
               socket_address:
-                address: qwen2.5_2
+                address: qwen2.5-2
                 port_value: 8299
         - endpoint:
             address:
               socket_address:
-                address: qwen2.5_3
-                port_value: 8299
+                address: qwen2.5-3
+                port_value: 8299        
     
     health_checks:
     - timeout: 5s
@@ -99,17 +99,17 @@ static_resources:
         - endpoint:
             address:
               socket_address:
-                address: qwen3.0_1
+                address: qwen3.0-1
                 port_value: 8299
         - endpoint:
             address:
               socket_address:
-                address: qwen3.0_2
+                address: qwen3.0-2
                 port_value: 8299
         - endpoint:
             address:
               socket_address:
-                address: qwen3.0_3
+                address: qwen3.0-3
                 port_value: 8299
     
     health_checks:
